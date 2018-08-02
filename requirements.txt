@@ -1,0 +1,7 @@
+Flask
+Flask-pyoidc
+Flask-Script
+Flask-SQLAlchemy
+pylint==1.8.3
+SQLAlchemy
+markdown
