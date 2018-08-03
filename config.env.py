@@ -2,7 +2,7 @@ import secrets
 from os import environ as env
 
 # Flask config
-DEBUG = True
+# DEBUG = True
 IP = env.get('IP', '0.0.0.0')
 PORT = env.get('PORT', 8080)
 SERVER_NAME = env.get('SERVER_NAME', 'rideboard-api.csh.rit.edu')
