@@ -240,14 +240,16 @@ def generate_api_key(reason: str, metadata=None):
     :return: Hash of the Key or a String stating an error
     """
     if not check_key_unique(metadata['uid'], reason):
-        # Creates the new API key
-        new_key = APIKey(metadata['uid'], reason)
-        # Adds, flushes and commits the new object to the database
-        db.session.add(new_key)
-        db.session.flush()
-        db.session.commit()
-        return new_key.hash
-    return "There's already a key with this reason for this user!"
+        if metadata['is_rtp'] or metadata['uid'] == 'agoel':
+            # Creates the new API key
+            new_key = APIKey(metadata['uid'], reason)
+            # Adds, flushes and commits the new object to the database
+            db.session.add(new_key)
+            db.session.flush()
+            db.session.commit()
+            return new_key.hash
+        return "You are not authorized to see this.", 403
+    return "There's already a key with this reason for this user!", 400
 
 
 @app.route('/listapikeys', methods=['GET'])
@@ -255,7 +257,6 @@ def generate_api_key(reason: str, metadata=None):
 @user_auth
 @cross_origin(headers=['Content-Type'])
 def list_api_keys(metadata=None):
-    # TODO: Optional param: username, lists all keys by that ownership and allows that username to see the output.
     if metadata['is_rtp'] or metadata['uid'] == 'agoel':
         return parse_apikeys_as_json(APIKey.query.all())
     return "You are not authorized to see this.", 403
