@@ -15,8 +15,8 @@ Field | Description
 `name` | _Name of the event_
 `creator` | _Username of the person who created the event_
 `cars` | _JSON Formatted list of cars in the event_
-`start_time` | _Time when the event will start in following python datetime format: '%a, %d %b %Y %H:%M:%S %Z'_
-`end_time` | _Time when the event will end in following python datetime format: '%a, %d %b %Y %H:%M:%S %Z'_
+`start_time` | _Time when the event will start in following python datetime format: '%a, %d %b %Y %H:%M:%S'_
+`end_time` | _Time when the event will end in following python datetime format: '%a, %d %b %Y %H:%M:%S'_
 `open_seats` | _Number of available seats in all the cars in the event_
 
 ### Cars:
@@ -26,8 +26,8 @@ Field | Description
 `ride_id` | _The car's unique id._
 `current_capacity` | _Number of people in the car currently_
 `max_capacity` | _Maximum number of seats available _
-`departure_time` | _Time when the person will leave in following python datetime format: '%a, %d %b %Y %H:%M:%S %Z'_
-`return_time` | _Time when the person will return in following python datetime format: '%a, %d %b %Y %H:%M:%S %Z'_
+`departure_time` | _Time when the person will leave in following python datetime format: '%a, %d %b %Y %H:%M:%S'_
+`return_time` | _Time when the person will return in following python datetime format: '%a, %d %b %Y %H:%M:%S'_
 `name` | _Name of the driver_
 `username` | _CSH username of the driver_
 `driver_comment` | _Comments provided by the driver_
@@ -104,23 +104,28 @@ _Returns the event with the earliest start date in the following format:_
 
 ## `/<api_key>/join/<car_id>/<username>/<first_name>/<last_name>` : `PUT`
 
-_User joins a provided car and the event in relation to the car is returned as JSON._
+_User joins a provided car and the event in relation to the car is returned as JSON.
+`<username>` should always be pulled from the CSH email address._
 
 **Required Parameters: `car_id`,`username`,`first_name`,`last_name`**
 
 
-## `/<api_key>/leave/<car_id>/<username>` : `PUT`
+## `/<api_key>/leave/<event_id>/<username>` : `PUT`
 
-_User leaves the car and the event in relation to the car is returned as JSON._
+_User leaves the car and the event in relation to the car is returned as JSON.
+`<username>` should always be pulled from the CSH email address.
+Also note, `event_id` is required, not `car_id`._
 
-**Required Parameters: `car_id`, `username`**
+**Required Parameters: `event_id`, `username`**
 
 
 ## `/<api_key>/create/event` : `POST`
 
-_Creates an event, returns the resulting event as JSON._
+_Creates an event, returns the resulting event as JSON.
+`creator` should always be pulled from the CSH email address.
+Also, `driver_comment` is optional._
 
-**Required Parameters: JSON Object, `driver_comment` is optional.**
+**Required Parameters: JSON Object**
 
 ```json
 {
@@ -136,7 +141,8 @@ _Creates an event, returns the resulting event as JSON._
 
 ## `/<api_key>/create/car/<event_id>` : `POST`
 
-_Creates a car in the provided event_id and returns the resulting event as JSON._
+_Creates a car in the provided `event_id` and returns the resulting event as JSON.
+`username` should always be pulled from the CSH email address._
 
 **Required Parameters: JSON Object**
 
@@ -149,6 +155,23 @@ _Creates a car in the provided event_id and returns the resulting event as JSON.
     "max_capacity":2,
 }
 ```
+
+
+## `/<api_key>/delete/event/<event_id>/<uid>` : `DELETE`
+
+_Deletes the provided event. Returns proper status code, 200 on success.
+`<uid>` should always be pulled from the CSH email address._
+
+**Required Parameters: `event_id`, `uid`**
+
+
+## `/<api_key>/delete/car/<event_id>/<uid>'` : `DELETE`
+
+_Deletes the car that is owned by the user in the provided event. Returns proper status code, 200 on success.
+`<uid>` should always be pulled from the CSH email address.
+Also note, `event_id` is required, not `car_id`._
+
+**Required Parameters: `event_id`, `uid`**
 
 
 ## `/generatekey/<reason>` : `GET`
