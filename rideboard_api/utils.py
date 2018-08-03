@@ -1,7 +1,3 @@
-# Credit to Liam Middlebrook and Ram Zallan
-# https://github.com/liam-middlebrook/gallery
-
-
 from functools import wraps
 
 from flask import session
@@ -9,14 +5,16 @@ from flask import session
 def user_auth(func):
     @wraps(func)
     def wrapped_function(*args, **kwargs):
-        last = str(session["userinfo"].get("family_name", ""))
-        first = str(session["userinfo"].get("given_name", ""))
-        uid = str(session["userinfo"].get("preferred_username", ""))
+        last = session["userinfo"].get("family_name", "")
+        first = session["userinfo"].get("given_name", "")
+        uid = session["userinfo"].get("preferred_username", "")
+        is_rtp = 'rtp' in session["userinfo"].get("groups", "")
 
         metadata = {
             "first": first,
             "last": last,
-            "uid": uid
+            "uid": uid,
+            "is_rtp": is_rtp
         }
         kwargs["metadata"] = metadata
 

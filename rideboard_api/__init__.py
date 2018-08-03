@@ -7,6 +7,7 @@
 # API keys.                             #
 #########################################
 import os
+from datetime import datetime
 import markdown
 from flask import Flask, request, jsonify, redirect
 from flask_cors import cross_origin
@@ -57,7 +58,7 @@ def all_events(api_key: str):
         else:
             # Makes query a List of all rides
             query = Ride.query.all()
-        return parse_event_as_json(query)
+        return parse_events_as_json(query)
     return "Invalid API Key!", 403
 
 
@@ -75,7 +76,7 @@ def upcoming_event(api_key: str):
     return "Invalid API Key!", 403
 
 
-@app.route('/<api_key>/join/<car_id>/<username>/<first_name>/<last_name>/', methods=['GET'])
+@app.route('/<api_key>/join/<car_id>/<username>/<first_name>/<last_name>', methods=['PUT'])
 @cross_origin(headers=['Content-Type'])
 def join_car(car_id, username: str, first_name: str, last_name: str, api_key: str):
     """
@@ -87,7 +88,6 @@ def join_car(car_id, username: str, first_name: str, last_name: str, api_key: st
     :param api_key: API key allowing for the use of the API
     :return: Event as JSON in which the Car belongs or 400 in case of error.
     """
-    # TODO: This method only works with GET, but I believe this should be a POST.
     if check_key(api_key):
         incar = False
         name = first_name+" "+last_name
@@ -110,7 +110,7 @@ def join_car(car_id, username: str, first_name: str, last_name: str, api_key: st
     return "Invalid API Key!", 403
 
 
-@app.route('/<api_key>/leave/<car_id>/<username>/', methods=['GET'])
+@app.route('/<api_key>/leave/<car_id>/<username>', methods=['PUT'])
 @cross_origin(headers=['Content-Type'])
 def leave_ride(car_id, username: str, api_key: str):
     """
@@ -120,7 +120,7 @@ def leave_ride(car_id, username: str, api_key: str):
     :param api_key: API key allowing for the use of the API
     :return: Event as JSON in which the Car belongs to.
     """
-    # TODO: Should be a POST; may be use /leave/event_id/username instead or allow both using params instead of route.
+    # TODO: Use /leave/event_id/username instead or allow both using params instead of route.
     if check_key(api_key):
         car = Car.query.filter(Car.id == car_id).first()
         rider = Rider.query.filter(Rider.username == username, Rider.car_id == car_id).first()
@@ -135,7 +135,49 @@ def leave_ride(car_id, username: str, api_key: str):
     return "Invalid API Key!", 403
 
 
-@app.route('/generatekey/<reason>')
+@app.route('/<api_key>/create/event', methods=['POST'])
+@cross_origin(headers=['Content-Type'])
+def create_event(api_key: str):
+    if check_key(api_key):
+        data = request.get_json()
+        if 'name' in data:
+            name = data['name']
+        else:
+            return "Event name not provided!", 400
+        if 'address' in data:
+            address = data['address']
+        else:
+            return "Event address not provided!", 400
+        if 'start_time' in data:
+            start_time = data['start_time']
+        else:
+            return "Event start_time not provided!", 400
+        if 'end_time' in data:
+            end_time = data['end_time']
+        else:
+            return "Event end_time not provided!", 400
+        if 'creator' in data:
+            # TODO: Possibly take owner of the API key as an else.
+            creator = data['creator']
+        else:
+            return "Event creator not provided!", 400
+        time_format = '%a, %d %b %Y %H:%M:%S'
+        start_time = datetime.strptime(start_time, time_format)
+        end_time = datetime.strptime(end_time, time_format)
+        ride = Ride(name, address, start_time, end_time, creator)
+        db.session.add(ride)
+        db.session.commit()
+        infinity = Car('∞', 'Need a Ride', 0, 0, start_time, end_time, "", ride.id)
+        db.session.add(infinity)
+        db.session.commit()
+        return jsonify(return_event_json(ride))
+    return "Invalid API Key!", 403
+
+
+# TODO: carform, delete ride, delete car
+
+
+@app.route('/generatekey/<reason>', methods=['GET'])
 @auth.oidc_auth
 @user_auth
 def generate_api_key(reason: str, metadata=None):
@@ -157,14 +199,22 @@ def generate_api_key(reason: str, metadata=None):
     return "There's already a key with this reason for this user!"
 
 
-# TODO: rideform, carform, delete ride, delete car
+@app.route('/listapikeys', methods=['GET'])
+@auth.oidc_auth
+@user_auth
+@cross_origin(headers=['Content-Type'])
+def list_api_keys(metadata=None):
+    # TODO: Optional param: username, lists all keys by that ownership and allows that username to see the output.
+    if metadata['is_rtp'] or metadata['uid'] == 'agoel':
+        return parse_apikeys_as_json(APIKey.query.all())
+    return "You are not authorized to see this.", 403
 
 
 def check_key(api_key: str) -> bool:
     """
-    Checks if the key exists.
+    Checks if the key exists using the hash
     :param api_key: API key
-    :return: true if the key exists in the databse
+    :return: true if the key exists in the database
     """
     keys = APIKey.query.filter_by(hash=api_key).all()
     if keys:
@@ -174,7 +224,7 @@ def check_key(api_key: str) -> bool:
 
 def check_key_unique(owner: str, reason: str) -> bool:
     """
-    Checks if there is an unique key of a given user and reason
+    Checks if the key exists using the owner and the reason
     :param owner: generator of the key
     :param reason: reason provided for the key
     :return: true if the key exists uniquely
@@ -185,11 +235,39 @@ def check_key_unique(owner: str, reason: str) -> bool:
     return False
 
 
+def return_apikey_json(key: APIKey):
+    """
+    Returns an APIKey Object as JSON
+    :param key: The APIKey object being formatted
+    :return: Returns the APIKey object formatted to return as JSON
+    """
+    return {
+        'id': key.id,
+        'owner': key.owner,
+        'hash': key.hash,
+        'reason': key.reason
+    }
+
+
+def parse_apikeys_as_json(keys: list, key_json=None) -> list:
+    """
+    Builds a list of APIKey as JSON
+    :param keys: List of APIKey Objects
+    :param key_json: List of APIKey Objects as dicts
+    :return: Returns a list of APIKey Objects as dicts
+    """
+    if key_json is None:
+        key_json = []
+    for key in keys:
+        key_json.append(return_apikey_json(key))
+    return jsonify(key_json)
+
+
 def return_event_json(event: Ride):
     """
     Returns an Event Object as JSON
     :param event: The event object being formatted
-    :return: Returns a dictionary of the event object formatted to return as JSON
+    :return: Returns the event object formatted to return as JSON
     """
     open_seats = 0
     if event.cars is not None:
@@ -203,11 +281,11 @@ def return_event_json(event: Ride):
         'end_time': event.end_time,
         'creator': event.creator,
         'open_seats': open_seats,
-        'cars': parse_car_as_dict(event.cars)
+        'cars': parse_cars_as_dict(event.cars)
     }
 
 
-def parse_event_as_json(events: list, event_json=None) -> list:
+def parse_events_as_json(events: list, event_json=None) -> list:
     """
     Builds a list of Events as JSON
     :param events: List of Event Objects
@@ -225,7 +303,7 @@ def return_car_dict(car: Car):
     """
     Returns a Car Object as dictionary
     :param car: The car object being formatted
-    :return: Returns a dictionary of the car object formatted to return as dictionary
+    :return: Returns the car object formatted to return as dictionary
     """
     riders = []
     for rider in car.riders:
@@ -244,7 +322,7 @@ def return_car_dict(car: Car):
     }
 
 
-def parse_car_as_dict(cars: list, car_dict=None) -> list:
+def parse_cars_as_dict(cars: list, car_dict=None) -> list:
     """
     Builds a list of Cars as JSON
     :param cars: List of Car Objects
