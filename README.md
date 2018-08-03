@@ -1,5 +1,5 @@
 # RideBoard API
-[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-366/)
+[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 [![Build Status](https://travis-ci.org/ag-ayush/RideBoardAPI.svg?branch=master)](https://travis-ci.org/ag-ayush/RideBoardAPI)
 
 A RESTful API for [CSH Rideboard](https://github.com/ag-ayush/rides) application.
@@ -8,6 +8,7 @@ A RESTful API for [CSH Rideboard](https://github.com/ag-ayush/rides) application
 ## Field Descriptions
 
 ### Event:
+
 Field | Description
 ------|------------
 `id` | _The event's unique id._
@@ -19,6 +20,7 @@ Field | Description
 `open_seats` | _number of available seats in all the cars in the event_
 
 ### Cars:
+
 Field | Description
 ------|------------
 `ride_id` | _The car's unique id._
@@ -33,6 +35,7 @@ Field | Description
 
 
 ## `/all` : `GET`
+
 _Returns all current events in the following JSON __list__ format:_
 
 ```json
@@ -69,6 +72,7 @@ Example request: `/all?id=41`
 
 
 ## `/upcoming` : `GET`
+
 _Returns the event with the earliest start date in the following format:_
 
 ```json
@@ -99,6 +103,23 @@ _Returns the event with the earliest start date in the following format:_
 
 
 ## `/join/<car_id>/<username>/<first_name>/<last_name>/` : `GET`
-_User joins a provided car and the event in relation to the car is returned._
+
+_User joins a provided car and the event in relation to the car is returned as JSON._
 
 **Required Parameters: `car_id`,`username`,`first_name`,`last_name`**
+
+
+## `/leave/<car_id>/<username>/` : `GET`
+
+_User leaves the car and the event in relation to the car is returned as JSON._
+
+**Required Parameters: `car_id`, `username`**
+
+
+## `/generatekey/<reason>` : `GET`
+
+_Generates an unique key, each of which has an unique owner/reason pair._
+
+**Required Parameter: `reason`**
+
+Sample Output: 96a2cea9c44c4f699947a3e8e186f036

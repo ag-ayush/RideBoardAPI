@@ -2,7 +2,26 @@
 # File name: models.py             #
 # Author: Ayush Goel               #
 ####################################
+from uuid import uuid4
+from sqlalchemy import UniqueConstraint
 from rideboard_api import db
+
+class APIKey(db.Model):
+    __tablename__ = 'APIKey'
+
+    id = db.Column(db.Integer, primary_key=True)
+    hash = db.Column(db.String(64), unique=True)
+    owner = db.Column(db.String(80))
+    reason = db.Column(db.String(120))
+    __table_args__ = (UniqueConstraint('owner', 'reason', name='unique_key'),)
+
+    def __init__(self, owner, reason):
+        self.hash = uuid4().hex
+        self.owner = owner
+        self.reason = reason
+
+    def __repr__(self):
+        return '<id {}>'.format(self.id)
 
 class Ride(db.Model):
     __tablename__ = 'rides'
