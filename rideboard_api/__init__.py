@@ -88,6 +88,7 @@ def join_car(car_id, username: str, first_name: str, last_name: str, api_key: st
     :param api_key: API key allowing for the use of the API
     :return: Event as JSON in which the Car belongs or 400 in case of error.
     """
+    # TODO: Don't use the car_id, use event_id and car owner's uid
     if check_key(api_key):
         incar = False
         name = first_name+" "+last_name
@@ -110,28 +111,27 @@ def join_car(car_id, username: str, first_name: str, last_name: str, api_key: st
     return "Invalid API Key!", 403
 
 
-@app.route('/<api_key>/leave/<car_id>/<username>', methods=['PUT'])
+@app.route('/<api_key>/leave/<event_id>/<username>', methods=['PUT'])
 @cross_origin(headers=['Content-Type'])
-def leave_ride(car_id, username: str, api_key: str):
+def leave_ride(event_id, username: str, api_key: str):
     """
     Removes username from the Car and returns the associated Event as JSON
-    :param car_id: ID of the car to remove the username from
+    :param event_id: ID of the car to remove the username from
     :param username: username
     :param api_key: API key allowing for the use of the API
     :return: Event as JSON in which the Car belongs to.
     """
-    # TODO: Use /leave/event_id/username instead or allow both using params instead of route.
     if check_key(api_key):
-        car = Car.query.filter(Car.id == car_id).first()
-        rider = Rider.query.filter(Rider.username == username, Rider.car_id == car_id).first()
-        event = Ride.query.filter(Ride.id == car.ride_id).first()
-        if rider is not None:
-            db.session.delete(rider)
-            car.current_capacity -= 1
-            db.session.add(car)
-            db.session.commit()
-            return jsonify(return_event_json(event))
-        return "You do not exist in that car!", 400
+        event = Ride.query.filter(Ride.id == event_id).first()
+        for car in event.cars:
+            rider = Rider.query.filter(Rider.username == username, Rider.car_id == car.id).first()
+            if rider is not None:
+                db.session.delete(rider)
+                car.current_capacity -= 1
+                db.session.add(car)
+                db.session.commit()
+                return jsonify(return_event_json(event))
+        return "You are not a rider in that event!", 400
     return "Invalid API Key!", 403
 
 
@@ -163,7 +163,6 @@ def create_event(api_key: str):
         else:
             return "Event end_time not provided!", 400
         if 'creator' in data:
-            # TODO: Possibly take owner of the API key as an else.
             creator = data['creator']
         else:
             return "Event creator not provided!", 400
@@ -221,11 +220,58 @@ def create_car(api_key: str, event_id):
         car = Car(username, name, 0, max_capacity, departure_time, return_time, driver_comment, event_id)
         db.session.add(car)
         db.session.commit()
-        return jsonify(return_event_json(Ride.query.filter_by(id=event_id).first()))
+        return jsonify(return_event_json(Ride.query.filter(id=event_id).first()))
     return "Invalid API Key!", 403
 
 
-# TODO: delete ride, delete car
+@app.route('/<api_key>/delete/event/<event_id>/<uid>', methods=['DELETE'])
+@cross_origin(headers=['Content-Type'])
+def delete_event(api_key: str, event_id, uid):
+    """
+    Delete an event.
+    :param api_key: API key allowing for the use of the API
+    :param event_id: ID of the event to delete.
+    :param uid: username of the person requesting this.
+    :return: Varying status code with message depending on outcome.
+    """
+    if check_key(api_key):
+        event = Ride.query.filter(Ride.id == event_id).first()
+        if event is not None:
+            if event.creator == uid:
+                for car in event.cars:
+                    for peeps in car.riders:
+                        db.session.delete(peeps)
+                    db.session.delete(car)
+                db.session.delete(event)
+                db.session.commit()
+                return "Deletion Successful", 200
+            return "You didn't create that event...", 403
+        return "That event doesn't exist, check your event_id...", 400
+    return "Invalid API Key!", 403
+
+
+@app.route('/<api_key>/delete/car/<event_id>/<uid>', methods=['DELETE'])
+@cross_origin(headers=['Content-Type'])
+def delete_car(api_key: str, event_id, uid):
+    """
+    Delete a car.
+    :param api_key: API key allowing for the use of the API
+    :param event_id: Id of the car to delete.
+    :param uid: username of the person requesting this.
+    :return: Varying status code with message depending on outcome.
+    """
+    if check_key(api_key):
+        car = Car.query.filter(Car.username == uid, Car.ride_id == event_id).first()
+        if car is not None:
+            if car.username == uid:
+                for peeps in car.riders:
+                    db.session.delete(peeps)
+                db.session.delete(car)
+                db.session.commit()
+                return "Deletion Successful", 200
+            return "You don't own that car.", 403
+        return "You do not have a car in that event!", 400
+    return "Invalid API Key!", 403
 
 
 @app.route('/generatekey/<reason>', methods=['GET'])
