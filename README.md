@@ -2,7 +2,7 @@
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 [![Build Status](https://travis-ci.org/ag-ayush/RideBoardAPI.svg?branch=master)](https://travis-ci.org/ag-ayush/RideBoardAPI)
 
-A RESTful API for [CSH Rideboard](https://github.com/ag-ayush/rides) application.
+A RESTful API for [CSH Rideboard](https://github.com/ag-ayush/rides) application. An API key is **_required_** to use the API.
 
 
 ## Field Descriptions
@@ -34,7 +34,7 @@ Field | Description
 `riders` | _list of usernames currently signed up in the car_
 
 
-## `/all` : `GET`
+## `/<api_key>/all` : `GET`
 
 _Returns all current events in the following JSON __list__ format:_
 
@@ -71,7 +71,7 @@ _Returns all current events in the following JSON __list__ format:_
 Example request: `/all?id=41`
 
 
-## `/upcoming` : `GET`
+## `/<api_key>/upcoming` : `GET`
 
 _Returns the event with the earliest start date in the following format:_
 
@@ -102,14 +102,14 @@ _Returns the event with the earliest start date in the following format:_
 ```
 
 
-## `/join/<car_id>/<username>/<first_name>/<last_name>/` : `GET`
+## `/<api_key>/join/<car_id>/<username>/<first_name>/<last_name>/` : `GET`
 
 _User joins a provided car and the event in relation to the car is returned as JSON._
 
 **Required Parameters: `car_id`,`username`,`first_name`,`last_name`**
 
 
-## `/leave/<car_id>/<username>/` : `GET`
+## `/<api_key>/leave/<car_id>/<username>/` : `GET`
 
 _User leaves the car and the event in relation to the car is returned as JSON._
 
