@@ -12,12 +12,12 @@ A RESTful API for [CSH Rideboard](https://github.com/ag-ayush/rides) application
 Field | Description
 ------|------------
 `id` | _The event's unique id._
-`name` | _name of the event_
-`creator` | _username of the person who created the event_
+`name` | _Name of the event_
+`creator` | _Username of the person who created the event_
 `cars` | _JSON Formatted list of cars in the event_
 `start_time` | _Time when the event will start in following python datetime format: '%a, %d %b %Y %H:%M:%S %Z'_
 `end_time` | _Time when the event will end in following python datetime format: '%a, %d %b %Y %H:%M:%S %Z'_
-`open_seats` | _number of available seats in all the cars in the event_
+`open_seats` | _Number of available seats in all the cars in the event_
 
 ### Cars:
 
@@ -28,10 +28,10 @@ Field | Description
 `max_capacity` | _Maximum number of seats available _
 `departure_time` | _Time when the person will leave in following python datetime format: '%a, %d %b %Y %H:%M:%S %Z'_
 `return_time` | _Time when the person will return in following python datetime format: '%a, %d %b %Y %H:%M:%S %Z'_
-`name` | _name of the driver_
+`name` | _Name of the driver_
 `username` | _CSH username of the driver_
 `driver_comment` | _Comments provided by the driver_
-`riders` | _list of usernames currently signed up in the car_
+`riders` | _List of usernames currently signed up in the car_
 
 
 ## `/<api_key>/all` : `GET`
@@ -102,18 +102,35 @@ _Returns the event with the earliest start date in the following format:_
 ```
 
 
-## `/<api_key>/join/<car_id>/<username>/<first_name>/<last_name>/` : `GET`
+## `/<api_key>/join/<car_id>/<username>/<first_name>/<last_name>` : `PUT`
 
 _User joins a provided car and the event in relation to the car is returned as JSON._
 
 **Required Parameters: `car_id`,`username`,`first_name`,`last_name`**
 
 
-## `/<api_key>/leave/<car_id>/<username>/` : `GET`
+## `/<api_key>/leave/<car_id>/<username>` : `PUT`
 
 _User leaves the car and the event in relation to the car is returned as JSON._
 
 **Required Parameters: `car_id`, `username`**
+
+
+## `/<api_key>/create/event` : `POST`
+
+_Creates an event, returns the resulting event as JSON._
+
+**Required Parameters: JSON Object**
+
+```json
+{
+  "name": "Testing 12",
+  "address":"NEW ADDRESS",
+  "start_time":"Thu, 09 Aug 2018 06:13:00",
+  "end_time":"Fri, 10 Aug 2018 06:13:00",
+  "creator":"agoel"
+ }
+```
 
 
 ## `/generatekey/<reason>` : `GET`
@@ -123,3 +140,27 @@ _Generates an unique key, each of which has an unique owner/reason pair._
 **Required Parameter: `reason`**
 
 Sample Output: 96a2cea9c44c4f699947a3e8e186f036
+
+
+## `/listapikeys` : `GET`
+
+_Lists all the keys in the database for RTP's and selected users as a JSON list._
+
+Sample Output:
+
+```json
+[
+  {
+    "hash": "96a2cea9c44c4f699947a3e8e186f036", 
+    "id": 54, 
+    "owner": "agoel", 
+    "reason": "For local testing."
+  }, 
+  {
+    "hash": "069db6062ae999d0806baaa9df40d1dd", 
+    "id": 55, 
+    "owner": "agoel", 
+    "reason": "I am testing key sets."
+  }
+]
+```
