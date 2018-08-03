@@ -135,9 +135,15 @@ def leave_ride(car_id, username: str, api_key: str):
     return "Invalid API Key!", 403
 
 
+# TODO: The ifs execute in order. if multiple things were not provided then it would only show the error on the first.
 @app.route('/<api_key>/create/event', methods=['POST'])
 @cross_origin(headers=['Content-Type'])
 def create_event(api_key: str):
+    """
+    Creates an event from a JSON object.
+    :param api_key: API key allowing for the use of the API
+    :return: Event as JSON if successful
+    """
     if check_key(api_key):
         data = request.get_json()
         if 'name' in data:
@@ -174,7 +180,52 @@ def create_event(api_key: str):
     return "Invalid API Key!", 403
 
 
-# TODO: carform, delete ride, delete car
+# TODO: The ifs execute in order. if multiple things were not provided then it would only show the error on the first.
+@app.route('/<api_key>/create/car/<event_id>', methods=['POST'])
+@cross_origin(headers=['Content-Type'])
+def create_car(api_key: str, event_id):
+    """
+    Creates a car from a JSON object.
+    :param api_key: API key allowing for the use of the API
+    :return: Car as JSON if successful
+    """
+    if check_key(api_key):
+        data = request.get_json()
+        if 'name' in data:
+            name = data['name']
+        else:
+            return "Car creator's name not provided!", 400
+        if 'username' in data:
+            username = data['username']
+        else:
+            return "Car creator's username not provided!", 400
+        if 'departure_time' in data:
+            departure_time = data['departure_time']
+        else:
+            return "Car's departure_time not provided!", 400
+        if 'return_time' in data:
+            return_time = data['return_time']
+        else:
+            return "Car's return_time not provided!", 400
+        if 'max_capacity' in data:
+            max_capacity = data['max_capacity']
+        else:
+            return "Car max_capacity not provided!", 400
+        if 'driver_comment' in data:
+            driver_comment = data['driver_comment']
+        else:
+            driver_comment = "No comments provided."
+        time_format = '%a, %d %b %Y %H:%M:%S'
+        departure_time = datetime.strptime(departure_time, time_format)
+        return_time = datetime.strptime(return_time, time_format)
+        car = Car(username, name, 0, max_capacity, departure_time, return_time, driver_comment, event_id)
+        db.session.add(car)
+        db.session.commit()
+        return jsonify(return_event_json(Ride.query.filter_by(id=event_id).first()))
+    return "Invalid API Key!", 403
+
+
+# TODO: delete ride, delete car
 
 
 @app.route('/generatekey/<reason>', methods=['GET'])
