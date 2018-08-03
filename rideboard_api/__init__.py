@@ -95,8 +95,7 @@ def join_car(car_id, username: str, first_name: str, last_name: str):
         db.session.add(car)
         db.session.commit()
         return jsonify(return_event_json(event))
-    else:
-        return "You already joined a ride, or are the owner of one!", 400
+    return "The car is either full, or you have already joined a ride, or you are the owner of one!", 400
 
 
 # TODO: rideform, carform, delete ride, delete car, leave ride, api-key
