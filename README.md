@@ -120,7 +120,7 @@ _User leaves the car and the event in relation to the car is returned as JSON._
 
 _Creates an event, returns the resulting event as JSON._
 
-**Required Parameters: JSON Object**
+**Required Parameters: JSON Object, `driver_comment` is optional.**
 
 ```json
 {
@@ -128,8 +128,26 @@ _Creates an event, returns the resulting event as JSON._
   "address":"NEW ADDRESS",
   "start_time":"Thu, 09 Aug 2018 06:13:00",
   "end_time":"Fri, 10 Aug 2018 06:13:00",
-  "creator":"agoel"
+  "creator":"agoel",
+  "driver_comment": "None."
  }
+```
+
+
+## `/<api_key>/create/car/<event_id>` : `POST`
+
+_Creates a car in the provided event_id and returns the resulting event as JSON._
+
+**Required Parameters: JSON Object**
+
+```json
+{
+    "name": "First Last",
+    "username":"user",
+    "departure_time":"Thu, 02 Aug 2018 06:13:00",
+    "return_time":"Thu, 09 Aug 2018 06:13:00",
+    "max_capacity":2,
+}
 ```
 
 
