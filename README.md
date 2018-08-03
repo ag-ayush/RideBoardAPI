@@ -153,7 +153,7 @@ _Creates a car in the provided event_id and returns the resulting event as JSON.
 
 ## `/generatekey/<reason>` : `GET`
 
-_Generates an unique key, each of which has an unique owner/reason pair._
+_Generates an unique key, each of which has an unique owner/reason pair. This action can only be done by an RTP or myself._
 
 **Required Parameter: `reason`**
 
