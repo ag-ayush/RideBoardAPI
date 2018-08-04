@@ -6,3 +6,4 @@ Flask-Cors
 pylint==1.8.3
 SQLAlchemy
 markdown
+psycopg2
