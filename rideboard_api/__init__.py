@@ -47,7 +47,7 @@ def all_events(api_key: str):
     """
     Returns all Events in the database
     :param api_key: API key allowing for the use of the API
-    :return: Returns JSON of all quotes in the rideboard database
+    :return: Returns JSON of all events in the rideboard database
     """
     if check_key(api_key):
         rideid = request.args.get('id')
@@ -59,6 +59,26 @@ def all_events(api_key: str):
             # Makes query a List of all rides
             query = Ride.query.all()
         return parse_events_as_json(query)
+    return "Invalid API Key!", 403
+
+@app.route('/<api_key>/get/car', methods=['GET'])
+@cross_origin(headers=['Content-Type'])
+def all_cars(api_key: str):
+    """
+    Returns all Cars in the database
+    :param api_key: API key allowing for the use of the API
+    :return: Returns JSON of all cars in the rideboard database
+    """
+    if check_key(api_key):
+        carid = request.args.get('id')
+        query = []
+        if carid is not None:
+            # adds a Car object to the List:query
+            query.append(Car.query.get(carid))
+        else:
+            # Makes query a List of all cars
+            query = Car.query.all()
+        return parse_cars_as_json(query)
     return "Invalid API Key!", 403
 
 
@@ -432,6 +452,20 @@ def parse_cars_as_dict(cars: list, car_dict=None) -> list:
     for event in cars:
         car_dict.append(return_car_dict(event))
     return car_dict
+
+
+def parse_cars_as_json(cars: list, car_json=None) -> list:
+    """
+    Builds a list of Cars as JSON
+    :param cars: List of Car Objects
+    :param car_json: List of Car Objects as dicts
+    :return: Returns a list of Car Objects as dicts
+    """
+    if car_json is None:
+        car_json = []
+    for car in cars:
+        car_json.append(return_car_dict(car))
+    return jsonify(car_json)
 
 
 @app.route("/logout")

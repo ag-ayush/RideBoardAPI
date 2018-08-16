@@ -70,6 +70,30 @@ _Returns all current events in the following JSON __list__ format:_
 
 Example request: `/all?id=41`
 
+## `/<api_key>/get/car` : `GET`
+
+_Returns all current cars in the following JSON __list__ format:_
+
+```json
+[
+  {
+    "current_capacity": 0, 
+    "departure_time": "Thu, 02 Aug 2018 06:13:00 GMT", 
+    "driver_comment": "", 
+    "id": 80, 
+    "max_capacity": 0, 
+    "name": "Need a Ride", 
+    "return_time": "Thu, 09 Aug 2018 06:13:00 GMT", 
+    "ride_id": 43, 
+    "riders": ["agoel", "red"], 
+    "username": "∞"
+  }
+]
+```
+
+**Allowed Parameters: `id`**
+
+Example request: `/get/car?id=80`
 
 ## `/<api_key>/upcoming` : `GET`
 
