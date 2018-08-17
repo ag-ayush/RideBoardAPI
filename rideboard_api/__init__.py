@@ -240,7 +240,7 @@ def create_car(api_key: str, event_id):
         car = Car(username, name, 0, max_capacity, departure_time, return_time, driver_comment, event_id)
         db.session.add(car)
         db.session.commit()
-        return jsonify(return_event_json(Ride.query.filter(id=event_id).first()))
+        return jsonify(return_event_json(Ride.query.filter(Ride.id == event_id).first()))
     return "Invalid API Key!", 403
 
 
