@@ -1,6 +1,7 @@
-rideboard-api-venv/
-__pycache__
+rideboard-api-env/
+**/__pycache__/
 .idea/
-testscript.py
-venv/
 .vscode/
+
+# Secrets
+config.sh
