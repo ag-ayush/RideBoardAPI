@@ -23,7 +23,9 @@ db = SQLAlchemy(app)
 
 # Import modules
 from app.home.controller import home
+from app.team.controller import teams
 
 # Register blueprints
 app.register_blueprint(home)
+app.register_blueprint(teams)
 
