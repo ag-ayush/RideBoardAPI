@@ -41,14 +41,17 @@ def get_all_events(team_id):
     event_objs = Event.query.filter_by(
         team_id=team_id, expired=expired).order_by(Event.start_time.asc()).all()
 
-    json_out = []
-    for event_obj in event_objs:
-        if expand:
-            json_out.append(event_schema_nested.dump(event_obj))
-        else:
-            json_out.append(event_schema.dump(event_obj))
+    json_out = model_list_to_dict_list(event_objs, event_schema_nested) if expand else model_list_to_dict_list(event_objs, event_schema)
 
     return jsonify(json_out)
+
+
+@events.route('/<event_id>', methods=['GET'])
+@user_in_team
+def get_event(team_id, event_id):
+    event = Event.query.get(event_id)
+    json_build = model_list_to_dict_list([event], event_schema_nested)
+    return jsonify(json_build[0])
 
 
 @events.route('/', methods=['POST'])
@@ -77,14 +80,6 @@ def _get_default_ride_user():
         db.session.add(user)
         return user
     return val
-
-
-@events.route('/<event_id>', methods=['GET'])
-@user_in_team
-def get_event(team_id, event_id):
-    event = Event.query.get(event_id)
-    json_build = model_list_to_dict_list([event], event_schema_nested)
-    return jsonify(json_build[0])
 
 
 @events.route('/<event_id>', methods=['PATCH'])

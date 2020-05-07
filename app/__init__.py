@@ -45,8 +45,10 @@ def method_not_allowed(e):
 from app.events.controller import events
 from app.team.controller import teams
 from app.home.controller import home
+from app.cars.controller import cars
 
 # Register blueprints
 app.register_blueprint(home)
 app.register_blueprint(teams)
 app.register_blueprint(events)
+app.register_blueprint(cars)

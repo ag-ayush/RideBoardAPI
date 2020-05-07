@@ -100,7 +100,7 @@ class Car(db.Model):
     __tablename__ = 'cars'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    username = db.Column(db.String(80), db.ForeignKey('user.id'), nullable=False) # TODO: Make foreign key to User
+    username = db.Column(db.String(80), db.ForeignKey('user.id'), nullable=False)
     name = db.Column(db.String(50), nullable=False)
     current_capacity = db.Column(db.Integer, nullable=False)
     max_capacity = db.Column(db.Integer, nullable=False)
