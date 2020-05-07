@@ -4,7 +4,7 @@ from functools import wraps
 from flask import request, abort
 
 from app.auth.controller import get_current_user
-from app.models_db import User, Team, Event
+from app.models_db import User, Team, Event, APIKey
 
 
 def model_list_to_dict_list(models, schema):
@@ -17,9 +17,20 @@ def model_list_to_dict_list(models, schema):
     return json_build
 
 
+def check_key(fn):
+    @wraps(fn)
+    def decorated_view(*args, **kwargs):
+        api_key = request.headers.get('x-api-key')
+        keys = APIKey.query.filter_by(hash=api_key).all()
+        if not keys:
+            return abort(401, "Invalid API Key!")
+        return fn(*args, **kwargs)
+    return decorated_view
+
+
 def user_in_team(fn):
     @wraps(fn)
-    @get_current_user
+    @get_current_user()
     def decorated_view(current_user, *args, **kwargs):
         team_id = kwargs['team_id']
         team = Team.query.get(team_id)
@@ -32,7 +43,7 @@ def user_in_team(fn):
 
 def user_is_team_owner(fn):
     @wraps(fn)
-    @get_current_user
+    @get_current_user()
     def decorated_view(current_user, *args, **kwargs):
         team_id = kwargs['team_id']
         team = Team.query.get(team_id)
@@ -46,7 +57,7 @@ def user_is_team_owner(fn):
 
 def user_is_event_creator(fn):
     @wraps(fn)
-    @get_current_user
+    @get_current_user()
     def decorated_view(current_user, *args, **kwargs):
         event_id = kwargs['event_id']
         event = Event.query.filter_by(id=event_id).first()

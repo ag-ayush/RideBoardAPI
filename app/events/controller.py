@@ -7,7 +7,7 @@ from flask import Blueprint, jsonify, request, Response
 
 from app import db
 from app.auth.controller import get_current_user
-from app.utils import model_list_to_dict_list, get_value_from_payload, user_in_team, user_is_event_creator
+from app.utils import model_list_to_dict_list, get_value_from_payload, user_in_team, user_is_event_creator, check_key
 from app.models_db import Event, Passenger, Car, User, Team
 from app.models_schema import EventSchema, PassengerSchema, CarSchema, UserSchema, TeamSchema
 
@@ -20,6 +20,7 @@ fmt = '%Y-%m-%d %H:%M'
 
 
 @events.route('/', methods=['GET'])
+@check_key
 @user_in_team
 def get_all_events(team_id):
     expired = request.args.get("expired") == 'true'
@@ -47,6 +48,7 @@ def get_all_events(team_id):
 
 
 @events.route('/<event_id>', methods=['GET'])
+@check_key
 @user_in_team
 def get_event(team_id, event_id):
     event = Event.query.get(event_id)
@@ -55,8 +57,9 @@ def get_event(team_id, event_id):
 
 
 @events.route('/', methods=['POST'])
+@check_key
 @user_in_team
-@get_current_user
+@get_current_user()
 def create_event(team_id, current_user):
     name = get_value_from_payload("name")
     address = get_value_from_payload("address")
@@ -83,6 +86,7 @@ def _get_default_ride_user():
 
 
 @events.route('/<event_id>', methods=['PATCH'])
+@check_key
 @user_in_team
 @user_is_event_creator
 def update_event(team_id, event_id):
@@ -113,6 +117,7 @@ def update_event(team_id, event_id):
 
 
 @events.route('/<event_id>', methods=["DELETE"])
+@check_key
 @user_in_team
 @user_is_event_creator
 def delete_event(team_id, event_id):

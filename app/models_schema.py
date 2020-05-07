@@ -3,7 +3,19 @@
 # Author: Ayush Goel               #
 ####################################
 from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field, fields
-from app.models_db import UserTeam, Team, User, Event, Car, Passenger
+from app.models_db import UserTeam, Team, User, Event, Car, Passenger, APIKey
+
+
+
+class APIKeySchema(SQLAlchemySchema):
+    class Meta:
+        model = APIKey
+        load_instance = True
+
+    id = auto_field()
+    hash = auto_field()
+    owner = auto_field()
+    reason = auto_field()
 
 
 class UserSchema(SQLAlchemySchema):

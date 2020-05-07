@@ -2,7 +2,7 @@ from app import db
 from app.auth.controller import get_current_user
 from app.models_db import Team, User
 from app.models_schema import TeamSchema, UserSchema
-from app.utils import model_list_to_dict_list, user_in_team, get_value_from_payload, user_is_team_owner
+from app.utils import model_list_to_dict_list, user_in_team, get_value_from_payload, user_is_team_owner, check_key
 from flask import Blueprint, jsonify, Response, abort
 
 teams = Blueprint('team', __name__, url_prefix='/teams')
@@ -12,7 +12,8 @@ team_schema_nested = TeamSchema(exclude=("members.teams",))
 
 
 @teams.route('/', methods=['GET'])
-@get_current_user
+@check_key
+@get_current_user()
 def get_teams(current_user):
     team_objs = db.session.query(Team).filter(Team.members.any(User.id == current_user.id)).all()
     json_build = model_list_to_dict_list(team_objs, team_schema)
@@ -20,6 +21,7 @@ def get_teams(current_user):
 
 
 @teams.route('/<team_id>', methods=['GET'])
+@check_key
 @user_in_team
 def get_team(team_id):
     team = Team.query.get(team_id)
@@ -28,7 +30,8 @@ def get_team(team_id):
 
 
 @teams.route('/', methods=['POST'])
-@get_current_user
+@check_key
+@get_current_user()
 def create_team(current_user):
     title = get_value_from_payload("title")
     description = get_value_from_payload("description")
@@ -42,6 +45,7 @@ def create_team(current_user):
 
 
 @teams.route('/<team_id>', methods=['PATCH'])
+@check_key
 @user_is_team_owner
 def update_team(team_id):
     team = Team.query.get(team_id)
@@ -68,6 +72,7 @@ def update_team(team_id):
 
 
 @teams.route('/<team_id>', methods=["DELETE"])
+@check_key
 @user_is_team_owner
 def delete_team(team_id):
     team = Team.query.get(team_id)
@@ -77,7 +82,8 @@ def delete_team(team_id):
 
 
 @teams.route('/invite/<uuid:token>', methods=["POST"])
-@get_current_user
+@check_key
+@get_current_user()
 def add_member(current_user, token):
     team = Team.query.filter_by(token=token).first()
     if not team:
@@ -93,6 +99,7 @@ def add_member(current_user, token):
 
 
 @teams.route('/<team_id>/user/<user_id>', methods=["DELETE"])
+@check_key
 @user_is_team_owner
 def remove_member(team_id, user_id):
     team = Team.query.get(team_id)
