@@ -1,37 +1,66 @@
 import uuid
+from functools import wraps
 
-def model_to_dict(model):
-    """ Returns a JSON representation of an SQLAlchemy-backed object.
-    """
-    json = {}
-    json['fields'] = {}
-    json['pk'] = getattr(model, 'id')
+from flask import request, abort
 
-    for col in model._sa_class_manager.mapper.mapped_table.columns:
-        json['fields'][col.name] = getattr(model, col.name)
-        if isinstance(json['fields'][col.name], uuid.UUID):
-            json['fields'][col.name] = str(json['fields'][col.name])
-
-    return json
+from app.auth.controller import get_current_user
+from app.models_db import User, Team, Event
 
 
-def list_model_to_json_list(models):
+def model_list_to_dict_list(models, schema):
     """ Returns a JSON representation of a list of SQLAlchemy-backed object.
     """
     json_build = []
     for model in models:
-        json_build.append(model_to_dict(model))
+        json_build.append(schema.dump(model))
 
     return json_build
 
 
 def user_in_team(fn):
     @wraps(fn)
-    def decorated_view(*args, **kwargs):
-        teamid = 0    # TODO: fix
-        current_user = kwargs['current_user']
-        valid = UserTeam.query.filter_by(team_id=teamid, user_id=current_user.id).all()
+    @get_current_user
+    def decorated_view(current_user, *args, **kwargs):
+        team_id = kwargs['team_id']
+        team = Team.query.get(team_id)
+        valid = team.members.filter(User.id == current_user.id).all()
         if not valid:
-            abort(404)
+            abort(405, "You are not allowed to access this team.")
         return fn(*args, **kwargs)
     return decorated_view
+
+
+def user_is_team_owner(fn):
+    @wraps(fn)
+    @get_current_user
+    def decorated_view(current_user, *args, **kwargs):
+        team_id = kwargs['team_id']
+        team = Team.query.get(team_id)
+        if team is None:
+            abort(404, "Provided team does not exist.")
+        elif team.owner != current_user.id:
+            abort(405, "You are not an admin of this team.")
+        return fn(*args, **kwargs)
+    return decorated_view
+
+
+def user_is_event_creator(fn):
+    @wraps(fn)
+    @get_current_user
+    def decorated_view(current_user, *args, **kwargs):
+        event_id = kwargs['event_id']
+        event = Event.query.filter_by(id=event_id).first()
+        if event is None:
+            abort(404, "Provided event does not exist.")
+        elif event.creator != current_user.id:
+            abort(405, "You are not the creator of this event.")
+        return fn(*args, **kwargs)
+    return decorated_view
+
+
+def get_value_from_payload(key, optional=False):
+    value = request.get_json().get(key)
+    print(request.values)
+    if value is None and not optional:
+        abort(400, description="Missing {} in request body.".format(key))
+    return value

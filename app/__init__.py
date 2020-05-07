@@ -1,7 +1,7 @@
-import os 
+import os
 
 # Import flask and template operators
-from flask import Flask, render_template,session, blueprints,jsonify, request
+from flask import Flask, render_template, session, blueprints, jsonify, request
 # Import SQLAlchemy
 from flask_sqlalchemy import SQLAlchemy
 
@@ -16,16 +16,37 @@ else:
 db = SQLAlchemy(app)
 
 # HTTP error handling route
-# @app.errorhandler(404)
-# def not_found(error):
-# 	return jsonify(success=True,error=404,text=str(error))
+@app.errorhandler(400)
+def bad_request(e):
+    return jsonify(error=str(e)), 400
 
 
-# Import modules
-from app.home.controller import home
+@app.errorhandler(401)
+def unauthorized(e):
+    return jsonify(error=str(e)), 401
+
+
+@app.errorhandler(403)
+def forbidden(e):
+    return jsonify(error=str(e)), 403
+
+
+@app.errorhandler(404)
+def resource_not_found(e):
+    return jsonify(error=str(e)), 404
+
+
+@app.errorhandler(405)
+def method_not_allowed(e):
+    return jsonify(error=str(e)), 405
+
+
+# pylint: disable=wrong-import-position
+from app.events.controller import events
 from app.team.controller import teams
+from app.home.controller import home
 
 # Register blueprints
 app.register_blueprint(home)
 app.register_blueprint(teams)
-
+app.register_blueprint(events)

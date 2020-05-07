@@ -21,3 +21,5 @@ OIDC_CLIENT_CONFIG = {
     'client_secret': env.get('OIDC_CLIENT_SECRET', ''),
     'post_logout_redirect_uris': [env.get('OIDC_LOGOUT_REDIRECT_URI', 'https://rideboard-api.csh.rit.edu/logout')]
 }
+
+# SQLALCHEMY_ECHO=True 

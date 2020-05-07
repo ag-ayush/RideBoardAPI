@@ -23,7 +23,7 @@ Field | Description
 
 Field | Description
 ------|------------
-`ride_id` | _The car's unique id._
+`car_id` | _The car's unique id._
 `current_capacity` | _Number of people in the car currently_
 `max_capacity` | _Maximum number of seats available _
 `departure_time` | _Time when the person will leave in following python datetime format: '%a, %d %b %Y %H:%M:%S'_
@@ -31,7 +31,7 @@ Field | Description
 `name` | _Name of the driver_
 `username` | _CSH username of the driver_
 `driver_comment` | _Comments provided by the driver_
-`riders` | _List of usernames currently signed up in the car_
+`passengers` | _List of usernames currently signed up in the car_
 
 
 ## `/<api_key>/all` : `GET`
@@ -51,8 +51,8 @@ _Returns all current events in the following JSON __list__ format:_
         "max_capacity": 0, 
         "name": "Need a Ride", 
         "return_time": "Thu, 09 Aug 2018 06:13:00 GMT", 
-        "ride_id": 43, 
-        "riders": ["agoel", "red"], 
+        "car_id": 43, 
+        "passengers": ["agoel", "red"], 
         "username": "∞"
       }
     ], 
@@ -84,8 +84,8 @@ _Returns all current cars in the following JSON __list__ format:_
     "max_capacity": 0, 
     "name": "Need a Ride", 
     "return_time": "Thu, 09 Aug 2018 06:13:00 GMT", 
-    "ride_id": 43, 
-    "riders": ["agoel", "red"], 
+    "car_id": 43, 
+    "passengers": ["agoel", "red"], 
     "username": "∞"
   }
 ]
@@ -111,8 +111,8 @@ _Returns the event with the earliest start date in the following format:_
       "max_capacity": 0, 
       "name": "Need a Ride", 
       "return_time": "Thu, 09 Aug 2018 08:06:00 GMT", 
-      "ride_id": 46, 
-      "riders": ["agoel", "red"], 
+      "car_id": 46, 
+      "passengers": ["agoel", "red"], 
       "username": "∞"
     }
   ], 
