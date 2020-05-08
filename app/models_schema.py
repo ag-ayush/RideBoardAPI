@@ -37,6 +37,7 @@ class TeamSchema(SQLAlchemySchema):
 
     id = auto_field()
     title = auto_field()
+    description = auto_field()
     token = auto_field()
     owner = auto_field()
     sharing = auto_field()

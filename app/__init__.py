@@ -43,9 +43,9 @@ def method_not_allowed(e):
 
 # pylint: disable=wrong-import-position
 from app.api_keys.controller import api_keys
-from app.events.controller import events
-from app.team.controller import teams
 from app.home.controller import home
+from app.team.controller import teams
+from app.events.controller import events
 from app.cars.controller import cars
 
 # Register blueprints

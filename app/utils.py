@@ -34,6 +34,8 @@ def user_in_team(fn):
     def decorated_view(current_user, *args, **kwargs):
         team_id = kwargs['team_id']
         team = Team.query.get(team_id)
+        if team is None:
+            abort(404, "Provided team does not exist.")
         valid = team.members.filter(User.id == current_user.id).all()
         if not valid:
             abort(405, "You are not allowed to access this team.")
@@ -71,7 +73,6 @@ def user_is_event_creator(fn):
 
 def get_value_from_payload(key, optional=False):
     value = request.get_json().get(key)
-    print(request.values)
     if value is None and not optional:
         abort(400, description="Missing {} in request body.".format(key))
     return value

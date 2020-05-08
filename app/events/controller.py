@@ -1,15 +1,13 @@
 import datetime
 import pytz
 
-from itertools import chain
-from sqlalchemy.orm import subqueryload
-from flask import Blueprint, jsonify, request, Response
+from flask import Blueprint, jsonify, request, Response, abort
 
 from app import db
 from app.auth.controller import get_current_user
 from app.utils import model_list_to_dict_list, get_value_from_payload, user_in_team, user_is_event_creator, check_key
-from app.models_db import Event, Passenger, Car, User, Team
-from app.models_schema import EventSchema, PassengerSchema, CarSchema, UserSchema, TeamSchema
+from app.models_db import Event, Car, User
+from app.models_schema import EventSchema
 
 events = Blueprint('events', __name__, url_prefix='/teams/<team_id>/events/')
 event_schema = EventSchema(exclude=("cars",))
@@ -42,7 +40,8 @@ def get_all_events(team_id):
     event_objs = Event.query.filter_by(
         team_id=team_id, expired=expired).order_by(Event.start_time.asc()).all()
 
-    json_out = model_list_to_dict_list(event_objs, event_schema_nested) if expand else model_list_to_dict_list(event_objs, event_schema)
+    json_out = model_list_to_dict_list(
+        event_objs, event_schema_nested) if expand else model_list_to_dict_list(event_objs, event_schema)
 
     return jsonify(json_out)
 
@@ -91,6 +90,8 @@ def _get_default_ride_user():
 @user_is_event_creator
 def update_event(team_id, event_id):
     event = Event.query.get(event_id)
+    if event is None:
+        abort(404, "Event not found")
 
     name = get_value_from_payload("name", optional=True)
     address = get_value_from_payload("address", optional=True)
@@ -122,6 +123,8 @@ def update_event(team_id, event_id):
 @user_is_event_creator
 def delete_event(team_id, event_id):
     event = Event.query.get(event_id)
+    if event is None:
+        abort(404, "Event not found")
     db.session.delete(event)
     db.session.commit()
     return Response(status=204)
