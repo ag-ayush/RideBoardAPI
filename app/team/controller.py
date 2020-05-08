@@ -70,7 +70,7 @@ def update_team(team_id):
     if user_id is not None:
         valid = team.members.filter(User.id == user_id).all()
         if not valid:
-            abort(400, "Provdided user_id is not a member of the team.")
+            abort(400, "Provided user_id is not a member of the team.")
         team.owner = user_id
 
     db.session.commit()
@@ -115,3 +115,7 @@ def remove_member(team_id, user_id):
     team.members.remove(user)
     db.session.commit()
     return Response(status=204)
+
+# TODO: Make admin
+
+# TODO: Remove admin
